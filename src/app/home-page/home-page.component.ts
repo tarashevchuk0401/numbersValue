@@ -5,16 +5,14 @@ import {
   FormControlName,
   FormGroup,
   ReactiveFormsModule,
+  Validators,
 } from '@angular/forms';
 import { generateClient, type Client } from 'aws-amplify/api';
 import * as mutations from '../../graphql/mutations';
 import * as queries from '../../graphql/queries';
-import * as subscriptions from '../../graphql/subscriptions'
+import * as subscriptions from '../../graphql/subscriptions';
 import { NumberValue, ListNumberValuesQuery } from '../../API';
-
-
-
-
+import { ResponseNumberValues } from '../types/response.interface';
 
 @Component({
   selector: 'app-home-page',
@@ -23,7 +21,7 @@ import { NumberValue, ListNumberValuesQuery } from '../../API';
 })
 export class HomePageComponent implements OnInit {
   formNumbers!: FormGroup;
-  allNumbers: number[] = [];
+  allNumbers: ResponseNumberValues[] = [];
 
   public client: any;
 
@@ -33,17 +31,16 @@ export class HomePageComponent implements OnInit {
 
   public async ngOnInit() {
     this.formNumbers = this.fb.group({
-      number: [''],
+      number: ['', [Validators.required, Validators.maxLength(10)]],
     });
 
-
-    this.onReport()
+    this.onReport();
   }
 
-
-
-  public async onSubmit(todo: any) {
-    console.log(this.formNumbers.value);
+  public async onSubmit() {
+    if (this.formNumbers.invalid) {
+      return;
+    }
     const newData = {
       id: new Date().toString(),
       value: Number(this.formNumbers.value.number),
@@ -55,19 +52,19 @@ export class HomePageComponent implements OnInit {
           input: newData,
         },
       });
-      console.log('item created!', response);
+      console.log('Number added', response);
       this.formNumbers.reset();
     } catch (e) {
-      console.log('error creating todo...', e);
+      console.log('Error adding a number...', e);
     }
   }
 
-  public async onReport(){
+  public async onReport() {
     const response = await this.client.graphql({
-      query: queries.listNumberValues
+      query: queries.listNumberValues,
     });
-    this.allNumbers = response.data.listNumberValues.items.map((i:any) => i.value);
-    console.log(this.allNumbers)
-    console.log(response.data.listNumberValues.items)
+    this.allNumbers = response.data.listNumberValues.items.map(
+      (i: ResponseNumberValues) => i.value
+    );
   }
 }
