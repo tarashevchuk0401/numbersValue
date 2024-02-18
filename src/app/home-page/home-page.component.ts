@@ -13,6 +13,10 @@ import * as queries from '../../graphql/queries';
 import * as subscriptions from '../../graphql/subscriptions';
 import { NumberValue, ListNumberValuesQuery } from '../../API';
 import { ResponseNumberValues } from '../types/response.interface';
+import { HttpClient } from '@angular/common/http';
+import { Apollo, gql } from 'apollo-angular';
+import { nanoid } from 'nanoid'
+
 
 @Component({
   selector: 'app-home-page',
@@ -23,9 +27,13 @@ export class HomePageComponent implements OnInit {
   formNumbers!: FormGroup;
   allNumbers: ResponseNumberValues[] = [];
 
+  rates: any;
+  loading = true;
+  error: any;
+
   public client: any;
 
-  constructor(private fb: FormBuilder) {
+  constructor(private fb: FormBuilder, private apollo: Apollo) {
     this.client = generateClient();
   }
 
@@ -35,14 +43,35 @@ export class HomePageComponent implements OnInit {
     });
 
     this.onReport();
-  }
+
+    // this.apollo
+    // .watchQuery({
+    //   query: gql`
+    //     {
+    //       rates(currency: "USD") {
+    //         currency
+    //         rate
+    //       }
+    //     }
+    //   `,
+    // })
+    // .valueChanges.subscribe((result: any) => {
+    //   this.rates = result.data?.rates;
+    //   this.loading = result.loading;
+    //   this.error = result.error;
+    // });
+}
+
+    
+  
+
 
   public async onSubmit() {
     if (this.formNumbers.invalid) {
       return;
     }
     const newData = {
-      id: new Date().toString(),
+      id: nanoid(),
       value: Number(this.formNumbers.value.number),
     };
     try {
@@ -63,8 +92,6 @@ export class HomePageComponent implements OnInit {
     const response = await this.client.graphql({
       query: queries.listNumberValues,
     });
-    this.allNumbers = response.data.listNumberValues.items.map(
-      (i: ResponseNumberValues) => i.value
-    );
+    this.allNumbers = response.data.listNumberValues.items.map((item: any) => item.value)
   }
 }

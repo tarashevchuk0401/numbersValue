@@ -14,6 +14,12 @@
     "categories": {
       "api": {
         "testnumbers": {}
+      },
+      "hosting": {
+        "amplifyhosting": {
+          "appId": "d2avi9okg9ko4a",
+          "type": "manual"
+        }
       }
     }
   }

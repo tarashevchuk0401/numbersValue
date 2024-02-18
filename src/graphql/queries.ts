@@ -28,11 +28,7 @@ export const listNumberValues = /* GraphQL */ `query ListNumberValues(
 ) {
   listNumberValues(filter: $filter, limit: $limit, nextToken: $nextToken) {
     items {
-      id
       value
-      createdAt
-      updatedAt
-      __typename
     }
     nextToken
     __typename
