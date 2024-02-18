@@ -5,33 +5,22 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { HomePageComponent } from './home-page/home-page.component';
 import { ReactiveFormsModule } from '@angular/forms';
-import { GraphQLModule } from './graphql.module';
-import { APOLLO_OPTIONS, ApolloModule } from 'apollo-angular';
-import { HttpLink } from 'apollo-angular/http';
 import { HttpClientModule } from '@angular/common/http';
-import { InMemoryCache } from '@apollo/client/core';
+// import { GraphQLModule } from './qraph-ql/qraph-ql.module';
+// import { Apollo, ApolloModule } from 'apollo-angular';
+// import { appsyncClient } from './app.sync';
 
 @NgModule({
   declarations: [AppComponent, HomePageComponent],
   imports: [
+    // ApolloModule,
     BrowserModule,
     HttpClientModule,
-    AppRoutingModule, 
-    ReactiveFormsModule, GraphQLModule],
-  providers: [
-    {
-      provide: APOLLO_OPTIONS,
-      useFactory(httpLink: HttpLink) {
-        return {
-          cache: new InMemoryCache(),
-          link: httpLink.create({
-            uri: 'https://48p1r2roz4.sse.codesandbox.io',
-          }),
-        };
-      },
-      deps: [HttpLink],
-    },
+    AppRoutingModule,
+    ReactiveFormsModule,
+    // GraphQLModule,
   ],
+  providers: [],
   bootstrap: [AppComponent],
 })
 export class AppModule {}
