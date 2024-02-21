@@ -1,42 +1,28 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { generateClient, type Client } from 'aws-amplify/api';
+import { generateClient } from 'aws-amplify/api';
 import * as mutations from '../../graphql/mutations';
 import * as queries from '../../graphql/queries';
+import * as subscriptions from '../../graphql/subscriptions';
 import { ResponseNumberValues } from '../types/response.interface';
-import { Apollo, gql } from 'apollo-angular';
 import { nanoid } from 'nanoid';
-
-// const GET_DATA_QUERY = gql`
-//   query ListNumberValues(
-//     $filter: ModelNumberValueFilterInput
-//     $limit: Int
-//     $nextToken: String
-//   ) {
-//     listNumberValues(filter: $filter, limit: $limit, nextToken: $nextToken) {
-//       items {
-//         value
-//       }
-//       nextToken
-//       __typename
-//     }
-//   }
-// `;
+import { Subject, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-home-page',
   templateUrl: './home-page.component.html',
   styleUrls: ['./home-page.component.scss'],
 })
-export class HomePageComponent implements OnInit {
-  formNumbers!: FormGroup;
-  allNumbers: ResponseNumberValues[] = [];
+export class HomePageComponent implements OnInit, OnDestroy {
+  public formNumbers!: FormGroup;
+  public allNumbers: ResponseNumberValues[] = [];
+  public sum: number = 0;
+  public showAll$: Subject<boolean> = new Subject();
+  public subscription$: Subscription | undefined;
 
   public client: any;
 
-  constructor(
-    private fb: FormBuilder // private apollo: Apollo,
-  ) {
+  constructor(private fb: FormBuilder) {
     this.client = generateClient();
   }
 
@@ -45,17 +31,11 @@ export class HomePageComponent implements OnInit {
       number: ['', [Validators.required, Validators.maxLength(10)]],
     });
 
-    this.onReport();
-
-    // this.apollo
-    //   .watchQuery<any>({
-    //     query: GET_DATA_QUERY,
-
-    //   })
-    //   .valueChanges.subscribe(({ data }) => {
-    //     this.data = data.data;
-    //     console.log(data);
-    //   });
+    this.subscription$ = this.client
+      .graphql({ query: subscriptions.onCreateNumberValue })
+      .subscribe((data: any) => {
+        this.sum += data.data.onCreateNumberValue.value;
+      });
   }
 
   public async onSubmit(): Promise<any> {
@@ -87,5 +67,11 @@ export class HomePageComponent implements OnInit {
     this.allNumbers = response.data.listNumberValues.items.map(
       (item: any) => item.value
     );
+
+    this.showAll$.next(true);
+  }
+
+  public ngOnDestroy() {
+    this.subscription$?.unsubscribe();
   }
 }
